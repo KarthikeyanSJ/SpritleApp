@@ -9,37 +9,55 @@ import AddPost from '../post/AddPost';
 import axios from 'axios';
 
 class ListPost extends Component {
-    state = {
+  constructor( props ) {
+		super( props );
+  this.state = {
         posts: [],
-        comments: []
-      };
+        loading: true
+      }
+    }
   onLogoutClick = e => {
     e.preventDefault();
     this.props.logoutUser();
   };
+	_isMounted = false;
 
   componentDidMount() {
-    // this.props.allPost();
+		this._isMounted = true;
+		fetch('https://jsonplaceholder.typicode.com/posts')
+			.then(response => response.json())
+			.then(jsonData => {
+				if ( this._isMounted ) {
+					this.setState( { posts: jsonData, loading: false } );
+				}
+			})
   }
-
+  renderPostItems() {
+		const postData = this.state.posts;
+		if ( postData.length ) {
+			return postData.map( post => (
+				<div className="card border-primary mb-3" key={post.id}>
+					<div className="card-header">{post.id}</div>
+					<div className="card-body">
+						<Link to={`/post?postId=${post.id}`} className="card-title">{post.title}</Link>
+						<p className="card-text">{post.body}</p>
+					</div>
+				</div>
+			) );
+		}
+	}
+  componentWillUnmount() {
+		this._isMounted = false;
+	}
   render() {
-    const { user } = this.props.auth;
-    // console.log('fdfdfdf',use)
+
     return (
-    
       <div style={{ height: "15vh" }} className="container valign-wrapper">        
         <div className="row">  
-        <ul className="collection">
-            {this.state.posts.map(post => (
-              <li
-                key={post.title}
-                className="collection-item left-align red lighten-3"
-              >
-                <h5>User ID: {post.title}</h5>
-                <p>Post: {post.title}</p>
-              </li>
-            ))}
-          </ul>        
+        <div className="my-posts page-wrap">
+				
+				{ this.renderPostItems() }
+			</div>      
             <button
               style={{
                 width: "150px",
